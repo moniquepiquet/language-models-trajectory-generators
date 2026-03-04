@@ -14,7 +14,7 @@ import os
 import json
 import models
 import utils
-from gemini_model import get_gemini_output, call_gemini_robotics_er
+from gemini_model import get_gemini_output, get_gemini_output_wrist, call_gemini_robotics_er
 from PIL import Image
 #from prompts.success_detection_prompt import SUCCESS_DETECTION_PROMPT
 from config import OK, PROGRESS, FAIL, ENDC
@@ -61,6 +61,10 @@ class API:
         depth_image_head = Image.open(config.depth_image_head_path).convert("L")
         depth_array = np.array(depth_image_head) / 255.
 
+        rgb_image_wrist = Image.open(config.rgb_image_wrist_path).convert("RGB")
+        depth_image_wrist = Image.open(config.depth_image_wrist_path).convert("L")
+        depth_array_wrist = np.array(depth_image_wrist) / 255.
+
         if self.segmentation_count == 0:
             xmem_image = Image.fromarray(np.zeros_like(depth_array)).convert("L")
             xmem_image.save(config.xmem_input_path)
@@ -73,13 +77,25 @@ class API:
         self.logger.info(OK + "Finished segmenting head camera image!" + ENDC)
 
         #masks = utils.get_segmentation_mask(model_predictions, config.segmentation_threshold)
-        masks = []
-        for model_prediction in model_predictions:            
-            masks.append(model_prediction)
-        
-        bounding_cubes_world_coordinates, bounding_cubes_orientations = utils.get_bounding_cube_from_point_cloud(rgb_image_head, masks, depth_array, self.head_camera_position, self.head_camera_orientation_q, self.segmentation_count)
+        # masks = []
+        # for model_prediction in model_predictions:            
+        #     masks.append(model_prediction)
 
-        utils.save_xmem_image(masks)
+        self.logger.info(PROGRESS + "Segmenting wrist camera image..." + ENDC)
+        model_predictions_wrist, _ = get_gemini_output_wrist(rgb_image_wrist, segmentation_texts)
+        self.logger.info(OK + "Finished segmenting wrist camera image!" + ENDC)
+
+        masks_head = []
+        masks_wrist = []
+
+        masks_head = [model_prediction for model_prediction in model_predictions]
+        masks_wrist = [model_prediction for model_prediction in model_predictions_wrist]
+
+        masks = min(len(masks_head), len(masks_wrist))
+
+        bounding_cubes_world_coordinates, bounding_cubes_orientations = utils.get_bounding_cube_from_point_cloud(rgb_image_head, rgb_image_wrist, masks, masks_head, masks_wrist, depth_array, depth_array_wrist, self.head_camera_position, self.head_camera_orientation_q, self.wrist_camera_position, self.wrist_camera_orientation_q, self.segmentation_count)
+        
+        #utils.save_xmem_image(masks)
 
         self.segmentation_texts.extend(segmentation_texts)
 

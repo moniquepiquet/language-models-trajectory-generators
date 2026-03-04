@@ -2,3 +2,10 @@ __pycache__/
 images/
 .DS_Store
 0_VRDemoSettings.txt
+.venv/.github
+.venv
+.python-version
+bounding_boxes.py
+log.txt
+ur3_teste_hit_the_can.txt
+.github

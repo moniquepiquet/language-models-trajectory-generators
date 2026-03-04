@@ -247,3 +247,81 @@ def get_gemini_output(image, segmentation_texts):
         print(f"An error occurred during mask processing or plotting: {e}")
         masks = mask_tensor
     return masks, phrases
+
+def get_gemini_output_wrist(image, segmentation_texts):
+    phrases = segmentation_texts
+    segmentation_texts = ", ".join(segmentation_texts) #queries
+    width, height = image.size
+
+    prompt = textwrap.dedent("""\
+    Provide the segmentation masks for the following objects seen from above in this image: %s.
+
+    The answer should follow the JSON format:
+    [
+      {
+        "box_2d": "[ymin, xmin, ymax, xmax]",
+        "label": "<label for the object>",
+        "mask": "data:image/png;base64,<base64 encoded PNG mask>"
+      },
+      ...
+    ]
+
+    The box_2d coordinates should be normalized to 0-1000 and must be integers.
+    The mask should be a base64 encoded PNG image where non-zero pixels indicate
+    the mask.""" % segmentation_texts)
+
+    start_time = time.time()
+    settings=types.GenerateContentConfig(temperature=0.5)
+    print("Raw Model Response Text:")
+
+    try:
+        json_output = call_gemini_robotics_er([image], prompt, settings)
+
+    except Exception as e:
+        print(f"Gemini Error: {e}")
+    
+    else:
+        print(f"\nTotal processing time: {(time.time() - start_time):.4f} seconds")
+    
+        try:
+            mask_tensor = parse_masks_to_tensor(
+                json_output, height, width
+            )
+            print(f"Success! Tensor Shape: {mask_tensor.shape}")
+
+            if mask_tensor.shape[0] > 0:
+                _, axes = plt.subplots(1, mask_tensor.shape[0] + 1, figsize=(15, 10))
+
+                axes[0].imshow(image)
+                axes[0].set_title("Original Image")
+                axes[0].axis('off')
+
+                for i in range(mask_tensor.shape[0]):
+                    axes[i+1].imshow(mask_tensor[i], cmap='gray')
+                    axes[i+1].set_title(f"Mask {i+1}")
+                    axes[i+1].axis('off')
+
+                plt.show()
+            else:
+                print("No masks found to plot.")
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+    try:
+        segmentation_masks = parse_segmentation_masks(
+            json_output, height, width
+        )
+        print(f"Successfully parsed {len(segmentation_masks)} segmentation masks.")
+
+        #annotated_img = plot_segmentation_masks(
+        #    image.convert("RGBA"), segmentation_masks
+        #)
+        #display.display(annotated_img)
+
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON response: {e}")
+    except Exception as e:
+        print(f"An error occurred during mask processing or plotting: {e}")
+        masks = mask_tensor
+    return masks, phrases

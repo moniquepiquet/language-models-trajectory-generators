@@ -19,10 +19,19 @@ class Environment:
         p.resetDebugVisualizerCamera(config.camera_distance, config.camera_yaw, config.camera_pitch, config.camera_target_position)
 
         object_start_position = config.object_start_position
+        table_start_position = config.table_start_position
         object_start_orientation_q = p.getQuaternionFromEuler(config.object_start_orientation_e)
+        table_start_orientation_q = p.getQuaternionFromEuler(config.table_start_orientation_e)
         #object_model = p.loadURDF("ycb_assets/002_master_chef_can.urdf", object_start_position, object_start_orientation_q, useFixedBase=False, globalScaling=config.global_scaling)
-        object_model = p.loadURDF("ycb_assets/006_mustard_bottle.urdf", object_start_position, object_start_orientation_q, useFixedBase=False, globalScaling=config.global_scaling)
+        #object_model = p.loadURDF("ycb_assets/009_copo.urdf", object_start_position, object_start_orientation_q, useFixedBase=False, globalScaling=config.global_scaling)
+        #object_model = p.loadURDF("ycb_assets/007_mesa.urdf", object_start_position, object_start_orientation_q, useFixedBase=True, globalScaling=config.global_scaling)
+        object_model = p.loadURDF("ycb_assets/007_mesa.urdf", table_start_position, table_start_orientation_q, useFixedBase=True)
+        object_model = p.loadURDF("ycb_assets/008_garrafa.urdf", object_start_position, object_start_orientation_q, useFixedBase=False)
+        #object_model = p.loadURDF("ycb_assets/008_garrafa.urdf", object_start_position, object_start_orientation_q, useFixedBase=False, globalScaling=config.global_scaling)
+        #object_model = p.loadURDF("ycb_assets/006_mustard_bottle.urdf", object_start_position, object_start_orientation_q, useFixedBase=False, globalScaling=config.global_scaling)
+        #object_model = p.loadURDF("ycb_assets/006_mustard_bottle.urdf", object_start_position, object_start_orientation_q, useFixedBase=False, globalScaling=config.global_scaling)
         #object_model = p.loadURDF("ycb_assets/003_cracker_box.urdf", object_start_position, object_start_orientation_q, useFixedBase=False, globalScaling=config.global_scaling)
+        #object_model = p.loadURDF("ycb_assets/025_mug.urdf", object_start_position, object_start_orientation_q, useFixedBase=False, globalScaling=config.global_scaling)
 
         if self.mode == "default":
 
@@ -52,12 +61,26 @@ def run_simulation_environment(args, env_connection, logger):
     env.load()
 
     robot = Robot(args)
+
+    #mesa_id = p.loadURDF("ycb_assets/007_mesa.urdf", config.object_start_position, p.getQuaternionFromEuler(config.table_start_orientation_e), useFixedBase=True)
+
+    # BB_desired = p.getAABB(mesa_id)
+
+    # dim_x = BB_desired[1][0] - BB_desired[0][0]
+    # dim_y = BB_desired[1][1] - BB_desired[0][1]
+    # dim_z = BB_desired[1][2] - BB_desired[0][2]
+
+    # drawAABB(BB_desired[0], BB_desired[1])
+
+    # print("Mesa dimensions (x, y, z): ", dim_x, dim_y, dim_z)
     robot.move(env, robot.ee_start_position, robot.ee_start_orientation_e, gripper_open=True, is_trajectory=False)
 
     env.state_id = p.saveState()
 
     env_connection_message = OK + "Finished setting up environment!" + ENDC
     env_connection.send([env_connection_message])
+
+
 
     while True:
 
@@ -71,7 +94,7 @@ def run_simulation_environment(args, env_connection, logger):
                 head_camera_position, head_camera_orientation_q = robot.get_camera_image("head", env, save_camera_image=True, rgb_image_path=config.rgb_image_head_path, depth_image_path=config.depth_image_head_path)
                 wrist_camera_position, wrist_camera_orientation_q = robot.get_camera_image("wrist", env, save_camera_image=True, rgb_image_path=config.rgb_image_wrist_path, depth_image_path=config.depth_image_wrist_path)
 
-                env_connection_message = OK + "Finished capturing head camera image!" + ENDC
+                env_connection_message = OK + "Finished capturing head and wrist camera image!" + ENDC
                 env_connection.send([head_camera_position, head_camera_orientation_q, wrist_camera_position, wrist_camera_orientation_q, env_connection_message])
 
             elif env_connection_received[0] == ADD_BOUNDING_CUBES:
@@ -161,3 +184,49 @@ def run_simulation_environment(args, env_connection, logger):
                 env_connection.send([env_connection_message])
 
         env.update()
+
+def drawAABB(aabbMin, aabbMax):
+  
+  f = [aabbMin[0], aabbMin[1], aabbMin[2]]
+  t = [aabbMax[0], aabbMin[1], aabbMin[2]]
+  p.addUserDebugLine(f, t, [1, 0, 0])
+  f = [aabbMin[0], aabbMin[1], aabbMin[2]]
+  t = [aabbMin[0], aabbMax[1], aabbMin[2]]
+  p.addUserDebugLine(f, t, [0, 1, 0])
+  f = [aabbMin[0], aabbMin[1], aabbMin[2]]
+  t = [aabbMin[0], aabbMin[1], aabbMax[2]]
+  p.addUserDebugLine(f, t, [0, 0, 1])
+
+  f = [aabbMin[0], aabbMin[1], aabbMax[2]]
+  t = [aabbMin[0], aabbMax[1], aabbMax[2]]
+  p.addUserDebugLine(f, t, [1, 1, 1])
+
+  f = [aabbMin[0], aabbMin[1], aabbMax[2]]
+  t = [aabbMax[0], aabbMin[1], aabbMax[2]]
+  p.addUserDebugLine(f, t, [1, 1, 1])
+
+  f = [aabbMax[0], aabbMin[1], aabbMin[2]]
+  t = [aabbMax[0], aabbMin[1], aabbMax[2]]
+  p.addUserDebugLine(f, t, [1, 1, 1])
+
+  f = [aabbMax[0], aabbMin[1], aabbMin[2]]
+  t = [aabbMax[0], aabbMax[1], aabbMin[2]]
+  p.addUserDebugLine(f, t, [1, 1, 1])
+
+  f = [aabbMax[0], aabbMax[1], aabbMin[2]]
+  t = [aabbMin[0], aabbMax[1], aabbMin[2]]
+  p.addUserDebugLine(f, t, [1, 1, 1])
+
+  f = [aabbMin[0], aabbMax[1], aabbMin[2]]
+  t = [aabbMin[0], aabbMax[1], aabbMax[2]]
+  p.addUserDebugLine(f, t, [1, 1, 1])
+
+  f = [aabbMax[0], aabbMax[1], aabbMax[2]]
+  t = [aabbMin[0], aabbMax[1], aabbMax[2]]
+  p.addUserDebugLine(f, t, [1.0, 0.5, 0.5])
+  f = [aabbMax[0], aabbMax[1], aabbMax[2]]
+  t = [aabbMax[0], aabbMin[1], aabbMax[2]]
+  p.addUserDebugLine(f, t, [1, 1, 1])
+  f = [aabbMax[0], aabbMax[1], aabbMax[2]]
+  t = [aabbMax[0], aabbMax[1], aabbMin[2]]
+  p.addUserDebugLine(f, t, [1, 1, 1])
