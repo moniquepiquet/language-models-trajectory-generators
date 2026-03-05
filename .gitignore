@@ -2,3 +2,7 @@ __pycache__/
 images/
 .DS_Store
 0_VRDemoSettings.txt
+.venv
+.python-version
+log.txt
+.github/

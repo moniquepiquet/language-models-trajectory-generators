@@ -27,7 +27,8 @@ class Robot:
             self.robot = "franka"
             self.ee_index = config.ee_index_franka
         elif args.robot == "ur3":
-            self.base_start_position = config.base_start_position_ur3
+            self.base_start_position = config.base_table_position_ur3
+            #self.base_start_position = config.base_start_position_ur3
             self.base_start_orientation_q = p.getQuaternionFromEuler(config.base_start_orientation_e_ur3)
             self.joint_start_positions = config.joint_start_positions_ur3
             self.id = p.loadURDF("ur3_description/ur_description/urdf/ur3.urdf", self.base_start_position, self.base_start_orientation_q, useFixedBase=True)
@@ -38,13 +39,17 @@ class Robot:
             joint_indices = [1, 2, 3, 4, 5 ,6] 
             for i, joint_index in enumerate(joint_indices):
                 p.resetJointState(self.id, joint_index, joint_configs[i])
+            self.draw_frame(config.head_camera_position, p.getQuaternionFromEuler(config.head_camera_orientation_e), axis_length=0.2, duration=0)
+            self.draw_frame(config.wrist_camera_position, p.getQuaternionFromEuler(config.wrist_camera_orientation_e), axis_length=0.2, duration=0)
+            
             if args.mode == "debug":
                 ee_pos, ee_orn = p.getLinkState(self.id, self.ee_index)[:2]            
                 self.draw_frame(ee_pos, ee_orn, axis_length=0.1)
                 print(ee_pos)
                 print(p.getEulerFromQuaternion(ee_orn))  
             # OnRobot RG2 gripper model adapted from University of Osaka
-            self.gripper_id = p.loadURDF("onrobot_rg_description/urdf/onrobot_rg2.urdf", config.ee_start_position_ur3, p.getQuaternionFromEuler(config.ee_start_orientation_e_ur3))            
+            self.gripper_id = p.loadURDF("onrobot_rg_description/urdf/onrobot_rg2.urdf", config.ee_table_position_ur3, p.getQuaternionFromEuler(config.ee_start_orientation_e_ur3))
+            #self.gripper_id = p.loadURDF("onrobot_rg_description/urdf/onrobot_rg2.urdf", config.ee_start_position_ur3, p.getQuaternionFromEuler(config.ee_start_orientation_e_ur3))            
             self.gripper_motor = config.onrobot_rg2_motor_joint          
             p.createConstraint(self.id, self.ee_index, self.gripper_id, 0, jointType=p.JOINT_FIXED, jointAxis=[0, 0, 0], parentFramePosition=[0, 0, 0], childFramePosition=[0, 0, 0], childFrameOrientation=p.getQuaternionFromEuler([0, 0, math.pi/2]))  
 
@@ -59,9 +64,11 @@ class Robot:
             self.ee_current_position = config.ee_start_position_franka
             self.ee_current_orientation_e = config.ee_start_orientation_e_franka
         elif args.robot == "ur3":
-            self.ee_start_position = config.ee_start_position_ur3
+            self.ee_start_position = config.ee_table_position_ur3
+            #self.ee_start_position = config.ee_start_position_ur3
             self.ee_start_orientation_e = config.ee_start_orientation_e_ur3
-            self.ee_current_position = config.ee_start_position_ur3
+            self.ee_current_position = config.ee_table_position_ur3
+            #self.ee_current_position = config.ee_start_position_ur3
             self.ee_current_orientation_e = config.ee_start_orientation_e_ur3            
         self.gripper_open = True
         self.trajectory_step = 1
@@ -227,10 +234,12 @@ class Robot:
     def get_camera_image(self, camera, env, save_camera_image, rgb_image_path, depth_image_path):
 
         if camera == "wrist":
-            camera_position = list(p.getLinkState(self.id, self.ee_index, computeForwardKinematics=True)[0])
-            if self.robot == "sawyer":
-                camera_position[2] -= config.wrist_camera_offset_sawyer
-            camera_orientation_q = p.getLinkState(self.id, self.ee_index, computeForwardKinematics=True)[1]
+            camera_position = config.wrist_camera_position
+            camera_orientation_q = p.getQuaternionFromEuler(config.wrist_camera_orientation_e)
+            # camera_position = list(p.getLinkState(self.id, self.ee_index, computeForwardKinematics=True)[0])
+            # if self.robot == "sawyer":
+            #     camera_position[2] -= config.wrist_camera_offset_sawyer
+            # camera_orientation_q = p.getLinkState(self.id, self.ee_index, computeForwardKinematics=True)[1]
         elif camera == "head":
             camera_position = config.head_camera_position
             camera_orientation_q = p.getQuaternionFromEuler(config.head_camera_orientation_e)

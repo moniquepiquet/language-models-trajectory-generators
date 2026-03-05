@@ -38,7 +38,7 @@ if __name__ == "__main__":
     # Parse args
     parser = argparse.ArgumentParser(description="Main Program.")
     parser.add_argument("-lm", "--language_model", choices=["gpt-5","gpt-4.1","gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-4", "gpt-3.5-turbo"], default="gpt-4o", help="select language model")
-    parser.add_argument("-r", "--robot", choices=["sawyer", "franka", "ur3"], default="sawyer", help="select robot")
+    parser.add_argument("-r", "--robot", choices=["sawyer", "franka", "ur3"], default="ur3", help="select robot")
     parser.add_argument("-m", "--mode", choices=["default", "debug"], default="default", help="select mode to run")
     args = parser.parse_args()
 
@@ -93,7 +93,8 @@ if __name__ == "__main__":
     elif args.robot == "franka":
         ee_start_position_prompt = config.ee_start_position_franka
     elif args.robot == "ur3":
-        ee_start_position_prompt = config.ee_start_position_ur3
+        ee_start_position_prompt = config.ee_table_position_ur3
+        #ee_start_position_prompt = config.ee_start_position_ur3
 
     new_prompt = MAIN_PROMPT.replace("[INSERT EE POSITION]", str(ee_start_position_prompt)).replace("[INSERT TASK]", command)
 

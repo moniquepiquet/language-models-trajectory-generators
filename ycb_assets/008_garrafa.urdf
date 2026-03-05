@@ -1,0 +1,22 @@
+<robot name="garrafa">
+	<link name="_name">
+		<visual>
+			<origin xyz="0 0 0.0980" rpy="1.5708 0 0" />
+			<geometry>
+				<mesh filename="008_garrafa/garrafa.obj" scale="0.1959 0.1959 0.1959" />
+			</geometry>
+			<material name="texture">
+				<color rgba="1.0 1.0 1.0 1.0" />
+			</material>
+		</visual>
+		<collision>
+			<geometry>
+				<mesh filename="008_garrafa/garrafa.obj" scale="0.1959 0.1959 0.1959" />
+			</geometry>
+		<origin xyz="0 0 0.0980" rpy="1.5708 0 0" /></collision>
+		<inertial>
+			<mass value="1.0" />
+			<inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+		</inertial>
+	</link>
+</robot>
