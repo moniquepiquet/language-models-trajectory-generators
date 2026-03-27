@@ -145,9 +145,11 @@ def get_bounding_cube_from_point_cloud(image_head, image_wrist, masks, head_mask
 
             max_z_coordinate = np.max(np.array(contour_world_points)[:, 2])
             min_z_coordinate = np.min(np.array(contour_world_points)[:, 2])
-            top_surface_world_points = [world_point for world_point in contour_world_points if world_point[2] > max_z_coordinate - config.point_cloud_top_surface_filter]
+            top_surface_world_points = contour_world_points_w #apenas os pontos da camera de cima.
+            
+            # top_surface_world_points = [world_point for world_point in contour_world_points if world_point[2] > max_z_coordinate - config.point_cloud_top_surface_filter]
 
-            rect = MultiPoint([world_point[:2] for world_point in top_surface_world_points]).minimum_rotated_rectangle
+            rect = MultiPoint([top_point[:2] for top_point in top_surface_world_points]).minimum_rotated_rectangle
     
             if isinstance(rect, Polygon):
                 rect = polygon.orient(rect, sign=-1)

@@ -26,11 +26,11 @@ class Environment:
         #object_model = p.loadURDF("ycb_assets/009_copo.urdf", object_start_position, object_start_orientation_q, useFixedBase=False, globalScaling=config.global_scaling)
         #object_model = p.loadURDF("ycb_assets/007_mesa.urdf", object_start_position, object_start_orientation_q, useFixedBase=True, globalScaling=config.global_scaling)
         object_model = p.loadURDF("ycb_assets/007_mesa.urdf", table_start_position, table_start_orientation_q, useFixedBase=True)
-        object_model = p.loadURDF("ycb_assets/008_garrafa.urdf", object_start_position, object_start_orientation_q, useFixedBase=False)
+        # object_model = p.loadURDF("ycb_assets/008_garrafa.urdf", object_start_position, object_start_orientation_q, useFixedBase=False)
         #object_model = p.loadURDF("ycb_assets/008_garrafa.urdf", object_start_position, object_start_orientation_q, useFixedBase=False, globalScaling=config.global_scaling)
+        # object_model = p.loadURDF("ycb_assets/006_mustard_bottle.urdf", object_start_position, object_start_orientation_q, useFixedBase=False, globalScaling=config.global_scaling)
         #object_model = p.loadURDF("ycb_assets/006_mustard_bottle.urdf", object_start_position, object_start_orientation_q, useFixedBase=False, globalScaling=config.global_scaling)
-        #object_model = p.loadURDF("ycb_assets/006_mustard_bottle.urdf", object_start_position, object_start_orientation_q, useFixedBase=False, globalScaling=config.global_scaling)
-        #object_model = p.loadURDF("ycb_assets/003_cracker_box.urdf", object_start_position, object_start_orientation_q, useFixedBase=False, globalScaling=config.global_scaling)
+        object_model = p.loadURDF("ycb_assets/003_cracker_box.urdf", object_start_position, object_start_orientation_q, useFixedBase=False, globalScaling=config.global_scaling)
         #object_model = p.loadURDF("ycb_assets/025_mug.urdf", object_start_position, object_start_orientation_q, useFixedBase=False, globalScaling=config.global_scaling)
 
         if self.mode == "default":

@@ -122,7 +122,7 @@ if __name__ == "__main__":
                             try:
                                 f = StringIO()
                                 with redirect_stdout(f):
-                                    exec(code)
+                                    exec(code) # executa o Python que o LLM gerou dentro do processo
                             except Exception:
                                 error_message = traceback.format_exc()
                                 new_prompt += ERROR_CORRECTION_PROMPT.replace("[INSERT BLOCK NUMBER]", str(block_number)).replace("[INSERT ERROR MESSAGE]", error_message)

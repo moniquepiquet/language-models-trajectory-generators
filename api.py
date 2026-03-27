@@ -12,9 +12,10 @@ from gemini_model import parse_json
 
 import os
 import json
+import sys
 import models
 import utils
-from gemini_model import get_gemini_output, get_gemini_output_wrist, call_gemini_robotics_er
+from gemini_model import get_gemini_output, call_gemini_robotics_er
 from PIL import Image
 #from prompts.success_detection_prompt import SUCCESS_DETECTION_PROMPT
 from config import OK, PROGRESS, FAIL, ENDC
@@ -73,7 +74,7 @@ class API:
 
         self.logger.info(PROGRESS + "Segmenting head camera image..." + ENDC)
         #model_predictions, boxes, segmentation_texts = models.get_langsam_output(rgb_image_head, self.langsam_model, segmentation_texts, self.segmentation_count)
-        model_predictions, segmentation_texts = get_gemini_output(rgb_image_head, segmentation_texts)
+        model_predictions, segmentation_texts = get_gemini_output(rgb_image_head, segmentation_texts, camera="head")
         self.logger.info(OK + "Finished segmenting head camera image!" + ENDC)
 
         #masks = utils.get_segmentation_mask(model_predictions, config.segmentation_threshold)
@@ -82,7 +83,7 @@ class API:
         #     masks.append(model_prediction)
 
         self.logger.info(PROGRESS + "Segmenting wrist camera image..." + ENDC)
-        model_predictions_wrist, _ = get_gemini_output_wrist(rgb_image_wrist, segmentation_texts)
+        model_predictions_wrist, _ = get_gemini_output(rgb_image_wrist, segmentation_texts, camera="wrist")
         self.logger.info(OK + "Finished segmenting wrist camera image!" + ENDC)
 
         masks_head = []
