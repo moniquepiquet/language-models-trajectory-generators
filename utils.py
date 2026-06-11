@@ -90,8 +90,6 @@ def get_bounding_cube_from_point_cloud(image_head, image_wrist, masks, head_mask
     bounding_cubes = []
     bounding_cubes_orientations = []
 
-    # idx = len(masks)
-
     for i in range (masks):
 
         head_mask = head_masks[i].float()   # check if this is necessary
@@ -107,40 +105,11 @@ def get_bounding_cube_from_point_cloud(image_head, image_wrist, masks, head_mask
 
         if contour_h is not None and contour_w is not None:
 
-            # # debugando contour_h
-            # debug_h = cv.cvtColor(head_mask_np, cv.COLOR_GRAY2BGR)  # base: máscara em cinza -> BGR
-            # cv.drawContours(debug_h, [contour_h], -1, (0, 0, 255), 2)  # vermelho
-            # cv.imwrite(config.contour_debug_image_path.format(object=segmentation_count, mask=2), debug_h)
-            # preenchimento_h = np.zeros((image_height_head, image_width_head), dtype=np.uint8)
-            # cv.fillPoly(preenchimento_h, [contour_h], 255)
-            # cv.imwrite(config.contour_debug_image_path.format(object=segmentation_count, mask=3), preenchimento_h)
-
-            # # debugando contour_w
-            # debug_w = cv.cvtColor(wrist_mask_np, cv.COLOR_GRAY2BGR)
-            # cv.drawContours(debug_w, [contour_w], -1, (0, 0, 255), 2)
-            # cv.imwrite(config.contour_debug_image_path.format(object=segmentation_count, mask=4), debug_w)
-            # preenchimento_w = np.zeros((image_height_wrist, image_width_wrist), dtype=np.uint8)
-            # cv.fillPoly(preenchimento_w, [contour_w], 255)
-            # cv.imwrite(config.contour_debug_image_path.format(object=segmentation_count, mask=5), preenchimento_w)
-
-
             contour_pixel_points_h = [(c, r, depth_array_h[r][c]) for r in range(image_height_head) for c in range(image_width_head) if cv.pointPolygonTest(contour_h, (c, r), measureDist=False) >= 0]
             contour_pixel_points_w = [(c, r, depth_array_w[r][c]) for r in range(image_height_wrist) for c in range(image_width_wrist) if cv.pointPolygonTest(contour_w, (c, r), measureDist=False) >= 0]
             contour_world_points_h = [get_world_point_world_frame(head_camera_position, head_camera_orientation_q, "head", image_head, pixel_point) for pixel_point in contour_pixel_points_h]
             contour_world_points_w = [get_world_point_world_frame(wrist_camera_position, wrist_camera_orientation_q, "wrist", image_wrist, pixel_point) for pixel_point in contour_pixel_points_w]
         
-            # debug = np.zeros((image_height_head, image_width_head), dtype=np.uint8)
-
-            # for c, r, d in contour_pixel_points_h:
-            #     debug[r, c] = 255
-
-            # cv.imwrite("debug_contour_pixels_head.png", debug)
-
-            # plot_cloud_3d("Contour world points head", contour_world_points_h, 5)
-            # plot_cloud_3d("Contour world points wrist", contour_world_points_w, 5)
-            # plot_cloud_3d("Bounding boxes", bounding_cubes, 1)
-
-            # contour_world_points = contour_world_points_h + contour_world_points_w
             contour_world_points = contour_world_points_h
 
             max_z_coordinate = np.max(np.array(contour_world_points)[:, 2])
@@ -166,10 +135,9 @@ def get_bounding_cube_from_point_cloud(image_head, image_wrist, masks, head_mask
 
                 # Calculating rotation in world frame
                 bounding_cubes_orientation_width = np.arctan2(box[1][1] - box[0][1], box[1][0] - box[0][0])
+                #imprimir os valores e desenhar frames
                 bounding_cubes_orientation_length = np.arctan2(box[2][1] - box[1][1], box[2][0] - box[1][0])
                 bounding_cubes_orientations.append([bounding_cubes_orientation_width, bounding_cubes_orientation_length])
-
-        # idx += 1
 
     bounding_cubes = np.array(bounding_cubes)
 
@@ -187,9 +155,13 @@ def get_world_point_world_frame(camera_position, camera_orientation_q, camera, i
 
     if camera == "wrist":
         # pixel_point = [-pixel_point[1], -pixel_point[0], pixel_point[2]]
-        pixel_point = [pixel_point[1], -pixel_point[0], pixel_point[2]]
-    elif camera == "head":
+        # pixel_point = [pixel_point[1], -pixel_point[0], pixel_point[2]]
         pixel_point = [-pixel_point[1], -pixel_point[0], pixel_point[2]]
+
+    elif camera == "head":
+        # pixel_point = [-pixel_point[1], -pixel_point[0], pixel_point[2]]
+        pixel_point = [-pixel_point[1], pixel_point[0], pixel_point[2]]
+
 
     world_point_camera_frame = (np.linalg.inv(K) @ pixel_point) * point[2]
     world_point_world_frame = Rt @ np.vstack((world_point_camera_frame, np.array([1.0])))

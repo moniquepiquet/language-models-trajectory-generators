@@ -12,7 +12,7 @@ import functools
 import models
 import config
 from numpy import pi
-from lang_sam import LangSAM
+# from lang_sam import LangSAM
 from multiprocessing import Process, Pipe
 from io import StringIO
 from contextlib import redirect_stdout
@@ -57,14 +57,16 @@ if __name__ == "__main__":
     torch.set_grad_enabled(False)
 
     # Load models
-    langsam_model = LangSAM()
+    # langsam_model = LangSAM()
+    langsam_model = None
     xmem_model = XMem(config.xmem_config, "./XMem/saves/XMem.pth", device).eval().to(device)
 
     # API set-up
     main_connection, env_connection = Pipe()
     api = API(args, main_connection, logger, client, langsam_model, xmem_model, device)
 
-    detect_object = api.detect_object
+    detect_object = api.detect_object_gemini
+    # detect_object = api.detect_object_sam
     execute_trajectory = api.execute_trajectory
     open_gripper = api.open_gripper
     close_gripper = api.close_gripper
@@ -131,7 +133,7 @@ if __name__ == "__main__":
                             else:
                                 s = f.getvalue()
                                 error = False
-                                if s != "" and len(s) < 2000:
+                                if s != "" and len(s) < 4000:
                                     new_prompt += PRINT_OUTPUT_PROMPT.replace("[INSERT PRINT STATEMENT OUTPUT]", s)
                                     new_prompt += "\n"
                                     error = True

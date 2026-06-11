@@ -104,6 +104,8 @@ class Robot:
                     joint_name = info[1].decode("utf-8")
                     joint_type = joint_type_map.get(info[2], f"unknown({info[2]})")
                     print(f"Index {i}: Joint name = {joint_name}, Type = {joint_type}")
+        
+        self.draw_frame([0, 0, 0], [0, 0, 0, 1], axis_length=0.2, duration=0)
 
 
     def move(self, env, ee_target_position, ee_target_orientation_e, gripper_open, is_trajectory):
@@ -249,7 +251,8 @@ class Robot:
 
         if camera == "wrist":
             init_camera_vector = [0, 0, 1]
-            init_up_vector = [1, 0, 0]
+            init_up_vector = [0, 0, -1]
+
         elif camera == "head":
             init_camera_vector = [0, 0, 1]
             init_up_vector = [-1, 0, 0]

@@ -59,11 +59,14 @@ ee_start_orientation_e_ur3 = [3.14159265339116, 2.1137534847394844e-10, 0.031066
 
 #object_start_position = [0.05, 0.75, 0.1] #sawyer
 #object_start_position = [0.05, 0.75, 0] #franka
+small_table_start_position = [0.0, 1.5, 0.0]
 table_start_position = [0.0, 0.0, 0.0] #CG da mesa na origem do sistema
+# object_start_position = [0, 0.26, 0.83220487] #teste 0.73 + CM (0.10220487)
 object_start_position = [0, 0.26, 0.73] #objetos sobre a mesa (0.73 = altura da mesa)
 #object_start_position = [0, 0.26, 0.8] #ur3 - mustard bottle on the table
 #object_start_orientation_e = [0.0, 0.0, random.uniform(-math.pi, math.pi)]
 table_start_orientation_e = [0.0, 0.0, math.pi]
+# object_start_orientation_e = [0.0, 0.0, 0.0]
 object_start_orientation_e = [0.0, 0.0, math.pi/3]
 
 global_scaling = 0.08

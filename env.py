@@ -19,18 +19,19 @@ class Environment:
         p.resetDebugVisualizerCamera(config.camera_distance, config.camera_yaw, config.camera_pitch, config.camera_target_position)
 
         object_start_position = config.object_start_position
+        small_table_start_position = config.small_table_start_position
         table_start_position = config.table_start_position
         object_start_orientation_q = p.getQuaternionFromEuler(config.object_start_orientation_e)
         table_start_orientation_q = p.getQuaternionFromEuler(config.table_start_orientation_e)
         #object_model = p.loadURDF("ycb_assets/002_master_chef_can.urdf", object_start_position, object_start_orientation_q, useFixedBase=False, globalScaling=config.global_scaling)
         #object_model = p.loadURDF("ycb_assets/009_copo.urdf", object_start_position, object_start_orientation_q, useFixedBase=False, globalScaling=config.global_scaling)
         #object_model = p.loadURDF("ycb_assets/007_mesa.urdf", object_start_position, object_start_orientation_q, useFixedBase=True, globalScaling=config.global_scaling)
+        # object_model = p.loadURDF("ycb_assets/010_mesa_pequena.urdf", small_table_start_position, table_start_orientation_q, useFixedBase=True)
         object_model = p.loadURDF("ycb_assets/007_mesa.urdf", table_start_position, table_start_orientation_q, useFixedBase=True)
         # object_model = p.loadURDF("ycb_assets/008_garrafa.urdf", object_start_position, object_start_orientation_q, useFixedBase=False)
         #object_model = p.loadURDF("ycb_assets/008_garrafa.urdf", object_start_position, object_start_orientation_q, useFixedBase=False, globalScaling=config.global_scaling)
         # object_model = p.loadURDF("ycb_assets/006_mustard_bottle.urdf", object_start_position, object_start_orientation_q, useFixedBase=False, globalScaling=config.global_scaling)
-        #object_model = p.loadURDF("ycb_assets/006_mustard_bottle.urdf", object_start_position, object_start_orientation_q, useFixedBase=False, globalScaling=config.global_scaling)
-        object_model = p.loadURDF("ycb_assets/003_cracker_box.urdf", object_start_position, object_start_orientation_q, useFixedBase=False, globalScaling=config.global_scaling)
+        object_model = p.loadURDF("ycb_assets/003_cracker_box.urdf", object_start_position, object_start_orientation_q, useFixedBase=False)
         #object_model = p.loadURDF("ycb_assets/025_mug.urdf", object_start_position, object_start_orientation_q, useFixedBase=False, globalScaling=config.global_scaling)
 
         if self.mode == "default":
@@ -62,24 +63,12 @@ def run_simulation_environment(args, env_connection, logger):
 
     robot = Robot(args)
 
-    #mesa_id = p.loadURDF("ycb_assets/007_mesa.urdf", config.object_start_position, p.getQuaternionFromEuler(config.table_start_orientation_e), useFixedBase=True)
-
-    # BB_desired = p.getAABB(mesa_id)
-
-    # dim_x = BB_desired[1][0] - BB_desired[0][0]
-    # dim_y = BB_desired[1][1] - BB_desired[0][1]
-    # dim_z = BB_desired[1][2] - BB_desired[0][2]
-
-    # drawAABB(BB_desired[0], BB_desired[1])
-
-    # print("Mesa dimensions (x, y, z): ", dim_x, dim_y, dim_z)
     robot.move(env, robot.ee_start_position, robot.ee_start_orientation_e, gripper_open=True, is_trajectory=False)
 
     env.state_id = p.saveState()
 
     env_connection_message = OK + "Finished setting up environment!" + ENDC
     env_connection.send([env_connection_message])
-
 
 
     while True:

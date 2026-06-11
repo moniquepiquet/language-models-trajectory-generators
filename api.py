@@ -46,7 +46,72 @@ class API:
 
 
 
-    def detect_object(self, segmentation_text):
+    def detect_object_sam(self, segmentation_text):
+
+        self.logger.info(PROGRESS + "Capturing head and wrist camera images..." + ENDC)
+        self.main_connection.send([CAPTURE_IMAGES])
+        [head_camera_position, head_camera_orientation_q, wrist_camera_position, wrist_camera_orientation_q, env_connection_message] = self.main_connection.recv()
+        self.logger.info(env_connection_message)
+
+        self.head_camera_position = head_camera_position
+        self.head_camera_orientation_q = head_camera_orientation_q
+        self.wrist_camera_position = wrist_camera_position
+        self.wrist_camera_orientation_q = wrist_camera_orientation_q
+
+        rgb_image_head = Image.open(config.rgb_image_head_path).convert("RGB")
+        depth_image_head = Image.open(config.depth_image_head_path).convert("L")
+        depth_array = np.array(depth_image_head) / 255.
+
+        if self.segmentation_count == 0:
+            xmem_image = Image.fromarray(np.zeros_like(depth_array)).convert("L")
+            xmem_image.save(config.xmem_input_path)
+
+        segmentation_texts = [segmentation_text]
+
+        self.logger.info(PROGRESS + "Segmenting head camera image..." + ENDC)
+        model_predictions, boxes, segmentation_texts = models.get_langsam_output(rgb_image_head, self.langsam_model, segmentation_texts, self.segmentation_count)
+        self.logger.info(OK + "Finished segmenting head camera image!" + ENDC)
+
+        masks = utils.get_segmentation_mask(model_predictions, config.segmentation_threshold)
+
+        bounding_cubes_world_coordinates, bounding_cubes_orientations = utils.get_bounding_cube_from_point_cloud(rgb_image_head, masks, depth_array, self.head_camera_position, self.head_camera_orientation_q, self.segmentation_count)
+
+        utils.save_xmem_image(masks)
+
+        self.segmentation_texts.extend(segmentation_texts)
+
+        self.logger.info(PROGRESS + "Adding bounding cubes to the environment..." + ENDC)
+        self.main_connection.send([ADD_BOUNDING_CUBES, bounding_cubes_world_coordinates])
+        [env_connection_message] = self.main_connection.recv()
+        self.logger.info(env_connection_message)
+
+        for i, bounding_cube_world_coordinates in enumerate(bounding_cubes_world_coordinates):
+
+            bounding_cube_world_coordinates[4][2] -= config.bounding_cube_depth_offset
+
+            object_width = np.around(np.linalg.norm(bounding_cube_world_coordinates[1] - bounding_cube_world_coordinates[0]), 3)
+            object_length = np.around(np.linalg.norm(bounding_cube_world_coordinates[2] - bounding_cube_world_coordinates[1]), 3)
+            object_height = np.around(np.linalg.norm(bounding_cube_world_coordinates[5] - bounding_cube_world_coordinates[0]), 3)
+
+            print("Position of " + segmentation_texts[i] + ":", list(np.around(bounding_cube_world_coordinates[4], 3)))
+
+            print("Dimensions:")
+            print("Width:", object_width)
+            print("Length:", object_length)
+            print("Height:", object_height)
+
+            if object_width < object_length:
+                print("Orientation along shorter side (width):", np.around(bounding_cubes_orientations[i][0], 3))
+                print("Orientation along longer side (length):", np.around(bounding_cubes_orientations[i][1], 3), "\n")
+            else:
+                print("Orientation along shorter side (length):", np.around(bounding_cubes_orientations[i][1], 3))
+                print("Orientation along longer side (width):", np.around(bounding_cubes_orientations[i][0], 3), "\n")
+
+        self.segmentation_count += 1
+
+
+
+    def detect_object_gemini(self, segmentation_text):
 
         self.logger.info(PROGRESS + "Capturing head and wrist camera images..." + ENDC)
         self.main_connection.send([CAPTURE_IMAGES])
@@ -161,7 +226,7 @@ class API:
 
         #google_api_key = os.getenv("GOOGLE_API_KEY")
         #client = genai.Client(api_key=google_api_key)
-        #MODEL_ID = "gemini-robotics-er-1.5-preview"
+        #MODEL_ID = "gemini-robotics-er-1.6-preview"
 
         if self.attempted_task:
 

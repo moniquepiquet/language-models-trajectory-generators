@@ -39,7 +39,7 @@ def call_gemini_robotics_er(img, prompt, settings=None):
 
     google_api_key = os.getenv("GOOGLE_API_KEY")
     client = genai.Client(api_key=google_api_key)
-    MODEL_ID = "gemini-robotics-er-1.5-preview"
+    MODEL_ID = "gemini-robotics-er-1.6-preview"
 
     default_config = types.GenerateContentConfig(
         temperature=0.5,
